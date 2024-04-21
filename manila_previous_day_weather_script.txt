@@ -32,7 +32,7 @@ unix_previous_day_start_manila_to_utc = time.mktime(previous_day_start_utc.timet
 unix_previous_day_end_manila_to_utc = time.mktime(previous_day_end_utc.timetuple())
 
 # Set the variables to add to the API call.
-WEATHER_API_KEY = "f30f2d26773a3f7d90bbca659b6bd567"
+WEATHER_API_KEY = ""
 UNITS = "metric"
 TYPE = "hour"
 CITY = "Manila"
