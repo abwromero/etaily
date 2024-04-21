@@ -1,0 +1,42 @@
+The API call to OpenWeather returns this JSON file:
+
+{
+"coord": {"lon": 120.9822, "lat": 14.6042},
+"weather": [{"id": 801, "main": "Clouds", "description": "few clouds", "icon": "02d"}],
+"base": "stations",
+"main": {"temp": 36.11, "feels_like": 42.97, "temp_min": 32.77, "temp_max": 36.74, "pressure": 1008, "humidity": 49},
+"visibility": 10000,
+"wind": {"speed": 5.14, "deg": 110},
+"clouds": {"all": 20},
+"dt": 1713593762,
+"sys": {"type": 2, "id": 2008256, "country": "PH", "sunrise": 1713562743, "sunset": 1713607830},
+"timezone": 28800,
+"id": 1701668,
+"name": "Manila",
+"cod": 200
+}
+
+To create the data warehouse for this data, it is important to consider the speed of how much a value in a column changes over time (cardinality)
+and how to cluster these groups of data together. For example, we can expect that the temperature can change every API call
+whereas the country will never change. We can logically group these data into different tables with respect to what the represent and
+their cardinality. This will be the basis in the creation of the fact and dimension tables.
+
+It can be seen for the data that the coordinates (lon and lat), the id (pertains to the city's id), the country, and the name (city name)
+can be housed into one table. The values for the location data barely change and it can even be stated that these values
+should be permanent. The primary key for this table is based on the id value in the JSON file.
+
+The same reasoning can be given for the select weather data such as weather.id, weather.main, weather.description, and weather.icon.
+These data can be housed into one table. The primary key for this column is based from weather.id.
+
+The sunrise and sunset values should be unique on a per day basis. To reduce the number of columns to be reflected in the fact table,
+the sunrise and sunset values can be separated to another table. The primary key for this column is auto incrementing.
+
+Finally, the fact table, called fct_weather, will contain weather values that are most likely to change every time the API is called.
+Such values are the temperature, feels like, minimum temperature, maximum temperature, pressure, humidity, visibility, wind speed, wind direction, and cloud cover.
+The base value from the JSON file is also included here instead as this column cannot be clustered with the dimension tables above and having another table to
+reflect just one column of data will appear inefficient. Other data in this table are foreign keys to the dim_location, dim_weather, and dim_sun.
+
+To lower the cost and enhance the speed of queries in the fact table, a recommendation is to set a partition by range. It is possible to set a group of partitions,
+with one partition stating the minimum and maximum UNIX values it can take.
+
+Slowly changing dimensions was considered for the design of this database, but the values in the dimension tables appear to be more or less permanent.

@@ -1,0 +1,13 @@
+Here are the instructions to run a Python Container in VSCode:
+
+1. Create a folder in your local machine called “etaily”.
+2. Open this folder in VSCode and ensure that the working directory is set to this folder.
+3. Install Docker in your local machine. After installation, run the command in the terminal: “docker pull python”
+NOTE: For production, it’s best to put the version of the image you’re getting to ensure that you will not always get the latest version. Always getting the latest version can break existing pipelines or scripts.
+4. Run this command after the first docker command: “docker run -it —name etaily -v /absolute/path/to/the/folder/etaily:/app python”
+5. In VSCode, ensure that Docker and Dev Containers extensions are installed.
+6. Go to the Remote Containers tab on the left of VSCode, find the etaily container, and select “Attach in New Window”.
+7. On the left side of the window, select the “app” folder. This folder is connected to the local machine.
+8. Right click this folder and create a new file called “weather.py”.
+9. Change the working directory to the “app” folder by entering “cd app” in the terminal.
+10. In the terminal, run the following command: “pip install requests boto3”

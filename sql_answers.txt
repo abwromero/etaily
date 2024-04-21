@@ -1,0 +1,84 @@
+Task # 1 SQL Queries
+
+Question 1
+
+SELECT
+	*
+FROM customer
+WHERE
+	gender = “female”
+
+Question 2
+
+SELECT
+	c.first_name,
+	c.last_name,
+	COUNT(fk_customer) AS num_orders
+FROM customer c
+LEFT JOIN order o ON c.id=o.fk_customer
+GROUP BY
+	c.first_name,
+	c.last_name
+
+Question 3
+
+SELECT
+    c.first_name,
+	c.last_name,
+	SUM(o.sum) AS total_spend
+FROM order o
+LEFT JOIN customer c ON o.fk_customer=c.id
+GROUP BY
+	c.first_name,
+	c.last_name
+
+Question 4
+
+SELECT
+  c.first_name,
+  c.last_name,
+  SUM(o.sum) AS total_spend
+FROM order  o
+LEFT JOIN customer c ON o.fk_customer=c.id
+GROUP BY
+  c.first_name,
+  c.last_name
+
+Question 5
+
+WITH
+male_age_ranking AS (
+  SELECT
+    RANK() OVER (ORDER BY c.age DESC) AS male_row_num,
+    c.id AS id_male,
+    c.first_name AS name_male,
+    c.age AS age_male
+  FROM customer c
+  WHERE
+    c.gender = 'male'
+),
+
+female_age_ranking AS (
+  SELECT
+    RANK() OVER (ORDER BY c.age DESC) AS female_row_num,
+    c.id AS id_female,
+    c.first_name AS name_female,
+    c.age AS age_female
+  FROM customer c
+  WHERE
+    c.gender = 'female'
+)
+
+SELECT
+  mar.id_male,
+  mar.name_male,
+  mar.age_male,
+  far.id_female,
+  far.name_female,
+  far.age_female
+FROM male_age_ranking mar
+FULL OUTER JOIN female_age_ranking far ON mar.male_row_num=far.female_row_num
+ORDER BY
+  mar.male_row_num
+
+NOTE: Full outer join was used in the last query because using this join type is more scalable. If we didn’t know the total number of male vs female customers and we have to rank them all, this join type will ensure that all customer data will be included in the query.

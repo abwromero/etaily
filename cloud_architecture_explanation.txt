@@ -1,0 +1,28 @@
+The objective of this architecture is to present an automated ingestion, storage, and reporting application for end-users
+with the data ingested from OpenWeather. For the diagram of this architecture, please refer to OpenWeather Cloud Architecture file.
+
+The cloud architecture for this task will not consider traditional data requirements, such as having a transactional database, 
+big data processing, and conventional orchestration (such as the use of Airflow). That said, this approach might be
+uncommon in most business requirements.
+
+The chosen architecture for this requirement involves the use of serverless applications, such as Lambda, S3, and Step Functions.
+It might appear contradictory at first to use serverless applications given the predictable and light requirements for this pipeline.
+However, it is important to consider that other architectural designs might require higher costs and administration given that this pipeline
+is only required to ingest and process data once a day, with a small and predictable amount of data to consider.
+For example, if the architecture requires the use of ECS or EC2 to ingest and process the data, there might be more requirements
+to implement this task than using Lambda. Also, using Glue might not fit for the requirements as Glue is designed to handle Spark workloads.
+For orchestration, using Managed Apache Airflow can be more expensive for lighter workloads. It appears that going for the serverless applications
+mentioned above is recommended given the reasons stated.
+
+With the considerations and constraints in mind, this architecture uses Lambda to ingest API data from OpenWeather and load these into S3
+as raw data. It is often suggested to always load data in their raw form to prepare for any change of downstream requirements. This data
+will then be left as is and be saved in JSON format. After the upload to S3, another Lambda function will transform the data and increment
+the data into Redshift as the OLAP database. Redshift is recommended in this case due to it having columnar storage, which is the format
+recommended for reporting. After this, Quicksight or any other reporting application can connect to Redshift and create reports from the data.
+Finally, Step Functions will orchestrate the ingestion and processing of data by the Lambda functions.
+
+An alternative design for this recommended pipeline is to ingest and process the data in S3 so that the loaded files are already flat and 
+prepared for ingestion to Redshift through Redshift Spectrum. This removes the requirement of having a Lambda function for processing data between
+S3 and Redshift. The downside of this design is that the stored data will not be left as raw files. If the raw files are processed, but with the raw files
+left as is, there will be duplicate data in S3: one for raw files and one for processed data. This will not be an ideal design, but can be considered
+for edge cases.

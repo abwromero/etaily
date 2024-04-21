@@ -1,0 +1,52 @@
+# Historical data cannot be accessed without a paid subscription. Please see reference: https://openweathermap.org/price#history
+# The code below is an example of how previous day's data for Manila can be collected.
+
+import requests
+import boto3
+import json
+import datetime as dt
+import time
+
+# The objective of this part of the script is to take the current time in Manila time, set the start time and end time for the previous day in Manila time,
+# convert the start time and end time back to UTC, and convert these UTC datetimes to UNIX timestamp. This is the format required by OpenWeather to get data from the previous day.
+
+# Manila's time zone is UTC+8, so we have to move the default UTC timezone to +8.
+tz_manila_offset = 8.0
+
+# Set the default time zone (UTC) to Manila's time zone.
+tz_manila = dt.timezone(dt.timedelta(hours=tz_manila_offset))
+
+# Set the current time zone to Manila and get the datetime for the previous day.
+datetime_previous_day_manila = dt.datetime.now(tz_manila) - dt.timedelta(days=1)
+
+# Set the time start and time end for the previous day in Manila time.
+previous_day_start_manila = datetime_previous_day_manila.replace(hour=00, minute=00, second=00, microsecond=000000)
+previous_day_end_manila = datetime_previous_day_manila.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+# Set back the timing to UTC.
+previous_day_start_utc = previous_day_start_manila - dt.timedelta(hours=8)
+previous_day_end_utc = previous_day_end_manila - dt.timedelta(hours=8)
+
+# Convert the UTC date and time to UNIX time.
+unix_previous_day_start_manila_to_utc = time.mktime(previous_day_start_utc.timetuple())
+unix_previous_day_end_manila_to_utc = time.mktime(previous_day_end_utc.timetuple())
+
+# Set the variables to add to the API call.
+WEATHER_API_KEY = "f30f2d26773a3f7d90bbca659b6bd567"
+UNITS = "metric"
+TYPE = "hour"
+CITY = "Manila"
+START = unix_previous_day_start_manila_to_utc
+END = unix_previous_day_end_manila_to_utc
+
+# Code to get previous day's data
+URL = "https://history.openweathermap.org/data/2.5/history/city?" + \
+    "q=" + CITY + \
+    "&type=" + TYPE + \
+    "&start=" + str(int(START)) + \
+    "&end=" + str(int(END)) + \
+    "&appid=" + WEATHER_API_KEY + \
+    "&units=" + UNITS
+
+# Get the API response from OpenWeather.
+response = requests.get(URL).json()
